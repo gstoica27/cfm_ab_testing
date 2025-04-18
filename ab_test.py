@@ -20,14 +20,6 @@ if "responses" not in st.session_state:
     st.session_state.responses = []
 if "assignments" not in st.session_state:
     st.session_state.assignments = {}
-if "run_next" not in st.session_state:
-    st.session_state.run_next = False
-
-# === SAFE RERUN HANDLER ===
-if st.session_state.run_next:
-    st.session_state.run_next = False
-    st.experimental_rerun()
-    st.stop()  # Just in case
 
 # === IDENTIFY TESTER ===
 st.title("Image Comparison Study")
@@ -118,5 +110,4 @@ if st.button("Submit and continue"):
     })
 
     st.session_state.index += 1
-    st.session_state.run_next = True
-    st.stop()
+    st.experimental_rerun()
