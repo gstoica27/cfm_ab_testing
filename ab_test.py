@@ -9,7 +9,7 @@ FOLDER_A = "images_a"
 FOLDER_B = "images_b"
 RESULTS_FILE = "ab_test_results.csv"
 
-# === INITIAL SETUP ===
+# === LOAD & SHUFFLE IMAGE NAMES ===
 image_names = sorted(os.listdir(FOLDER_A))
 random.shuffle(image_names)
 
@@ -20,6 +20,13 @@ if "responses" not in st.session_state:
     st.session_state.responses = []
 if "assignments" not in st.session_state:
     st.session_state.assignments = {}
+if "run_next" not in st.session_state:
+    st.session_state.run_next = False
+
+# === HANDLE SAFE RERUN ===
+if st.session_state.run_next:
+    st.session_state.run_next = False
+    st.experimental_rerun()
 
 # === IDENTIFY TESTER ===
 st.title("Image Comparison Study")
@@ -28,7 +35,7 @@ if not tester:
     st.warning("Please enter your ID to begin.")
     st.stop()
 
-# === END OF TEST HANDLING ===
+# === FINISH LOGIC ===
 if st.session_state.index >= len(image_names):
     st.success("✅ You’ve completed the test. Thank you!")
 
@@ -55,12 +62,12 @@ if st.session_state.index >= len(image_names):
 
     st.stop()
 
-# === CURRENT COMPARISON ===
+# === CURRENT IMAGE ===
 img_name = image_names[st.session_state.index]
 img_path_a = os.path.join(FOLDER_A, img_name)
 img_path_b = os.path.join(FOLDER_B, img_name)
 
-# Random left/right assignment
+# Randomize left/right
 if img_name not in st.session_state.assignments:
     if random.random() < 0.5:
         st.session_state.assignments[img_name] = {"left": "A", "right": "B"}
@@ -71,7 +78,7 @@ assignment = st.session_state.assignments[img_name]
 img_left = Image.open(img_path_a if assignment["left"] == "A" else img_path_b)
 img_right = Image.open(img_path_a if assignment["right"] == "A" else img_path_b)
 
-# === DISPLAY UI ===
+# === UI ===
 st.markdown(f"### Image {st.session_state.index + 1} of {len(image_names)}")
 
 col1, col2 = st.columns(2)
@@ -80,7 +87,7 @@ with col1:
 with col2:
     st.image(img_right, caption="Right", use_column_width=True)
 
-# === PREFERENCE INPUT ===
+# === INPUTS ===
 preference = st.radio(
     "Which image do you prefer?",
     ["Left", "Right", "No preference"],
@@ -88,7 +95,6 @@ preference = st.radio(
 )
 
 confidence = st.slider("How confident are you?", 1, 5, 3)
-
 comment = st.text_input("Any comments? (optional)", "")
 
 # === SUBMIT ===
@@ -111,4 +117,5 @@ if st.button("Submit and continue"):
     })
 
     st.session_state.index += 1
-    st.experimental_rerun()
+    st.session_state.run_next = True
+    st.stop()
