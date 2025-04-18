@@ -80,18 +80,21 @@ with col1:
 with col2:
     st.image(img_right, caption="Right", use_column_width=True)
 
-# === INPUTS ===
-preference = st.radio(
-    "Which image do you prefer?",
-    ["Left", "Right", "No preference"],
-    horizontal=True
-)
+# === INPUT FORM ===
+with st.form(key="response_form"):
+    preference = st.radio(
+        "Which image do you prefer?",
+        ["Left", "Right", "No preference"],
+        horizontal=True,
+        key="preference_input"
+    )
 
-confidence = st.slider("How confident are you?", 1, 5, 3)
-comment = st.text_input("Any comments? (optional)", "")
+    confidence = st.slider("How confident are you?", 1, 5, 3, key="confidence_input")
+    comment = st.text_input("Any comments? (optional)", "", key="comment_input")
 
-# === SUBMIT ===
-if st.button("Submit and continue"):
+    submit = st.form_submit_button("Submit and continue")
+
+if submit:
     preferred_model = (
         assignment["left"] if preference == "Left"
         else assignment["right"] if preference == "Right"
@@ -111,3 +114,4 @@ if st.button("Submit and continue"):
 
     st.session_state.index += 1
     st.experimental_rerun()
+    st.stop()
