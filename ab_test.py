@@ -23,10 +23,11 @@ if "assignments" not in st.session_state:
 if "run_next" not in st.session_state:
     st.session_state.run_next = False
 
-# === HANDLE SAFE RERUN ===
+# === SAFE RERUN HANDLER ===
 if st.session_state.run_next:
     st.session_state.run_next = False
     st.experimental_rerun()
+    st.stop()  # Just in case
 
 # === IDENTIFY TESTER ===
 st.title("Image Comparison Study")
