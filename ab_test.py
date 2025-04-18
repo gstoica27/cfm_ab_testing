@@ -20,6 +20,13 @@ if "responses" not in st.session_state:
     st.session_state.responses = []
 if "assignments" not in st.session_state:
     st.session_state.assignments = {}
+if "trigger_rerun" not in st.session_state:
+    st.session_state.trigger_rerun = False
+
+# === RERUN ON TRIGGER ===
+if st.session_state.trigger_rerun:
+    st.session_state.trigger_rerun = False
+    st.experimental_rerun()
 
 # === IDENTIFY TESTER ===
 st.title("Image Comparison Study")
@@ -60,7 +67,7 @@ img_name = image_names[st.session_state.index]
 img_path_a = os.path.join(FOLDER_A, img_name)
 img_path_b = os.path.join(FOLDER_B, img_name)
 
-# Randomize left/right
+# Randomize left/right assignment for blinding
 if img_name not in st.session_state.assignments:
     if random.random() < 0.5:
         st.session_state.assignments[img_name] = {"left": "A", "right": "B"}
@@ -71,7 +78,7 @@ assignment = st.session_state.assignments[img_name]
 img_left = Image.open(img_path_a if assignment["left"] == "A" else img_path_b)
 img_right = Image.open(img_path_a if assignment["right"] == "A" else img_path_b)
 
-# === UI ===
+# === DISPLAY UI ===
 st.markdown(f"### Image {st.session_state.index + 1} of {len(image_names)}")
 
 col1, col2 = st.columns(2)
@@ -80,7 +87,7 @@ with col1:
 with col2:
     st.image(img_right, caption="Right", use_column_width=True)
 
-# === INPUT FORM ===
+# === RESPONSE FORM ===
 with st.form(key="response_form"):
     preference = st.radio(
         "Which image do you prefer?",
@@ -88,12 +95,17 @@ with st.form(key="response_form"):
         horizontal=True,
         key="preference_input"
     )
-
-    confidence = st.slider("How confident are you?", 1, 5, 3, key="confidence_input")
-    comment = st.text_input("Any comments? (optional)", "", key="comment_input")
-
+    confidence = st.slider(
+        "How confident are you?", 1, 5, 3,
+        key="confidence_input"
+    )
+    comment = st.text_input(
+        "Any comments? (optional)", "",
+        key="comment_input"
+    )
     submit = st.form_submit_button("Submit and continue")
 
+# === HANDLE SUBMISSION ===
 if submit:
     preferred_model = (
         assignment["left"] if preference == "Left"
@@ -113,5 +125,5 @@ if submit:
     })
 
     st.session_state.index += 1
-    st.experimental_rerun()
+    st.session_state.trigger_rerun = True
     st.stop()
